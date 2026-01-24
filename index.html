@@ -73,15 +73,23 @@
     <div class="controls">
         <input id="vid1" placeholder="Left screen video ID">
         <input id="vid2" placeholder="Right screen video ID">
+        <input id="name1" placeholder="Left screen player name">
+        <input id="name2" placeholder="Right screen player name">
         <button onclick="updateVideos()">Update</button>
     </div>
 
     <div class="arena">
         <div class="screen">
+            <div>
+                <span id="player1" style="font-size: 24px;font-weight: bold;">PutraSkibidi</span>
+            </div>
             <iframe id="frame1" src="https://www.youtube.com/embed/VIDEO_ID_1" allowfullscreen></iframe>
         </div>
 
         <div class="screen">
+            <div>
+                <span id="player2" style="font-size: 24px;font-weight: bold;">Putri SKIBIDI</span>
+            </div>
             <iframe id="frame2" src="https://www.youtube.com/embed/VIDEO_ID_2" allowfullscreen></iframe>
         </div>
     </div>
@@ -110,7 +118,10 @@
         function updateVideos() {
             const v1 = extractVideoID(document.getElementById("vid1").value.trim());
             const v2 = extractVideoID(document.getElementById("vid2").value.trim());
-
+            const n1 = document.getElementById("name1").value.trim();
+            const n2 = document.getElementById("name2").value.trim();
+            document.getElementById("player1").textContent = n1;
+            document.getElementById("player2").textContent = n2;
             if (v1) frame1.src = "https://www.youtube.com/embed/" + v1;
             if (v2) frame2.src = "https://www.youtube.com/embed/" + v2;
         }
