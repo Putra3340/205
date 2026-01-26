@@ -5,53 +5,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>2-Screen Tournament Control</title>
+    <title>3-Screen Tournament Control</title>
 
     <style>
         body {
             margin: 0;
             background: #0b0b0f;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
+            overflow: hidden;
+            /* Prevent scrolling */
+        }
+
+        /* Controls Container - Floating Glassmorphism at Bottom */
+        .controls-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 1000px;
         }
 
         .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) auto;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(20, 20, 28, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .input-group {
             display: flex;
-            gap: 10px;
-            padding: 12px;
-            background: #14141c;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 600;
+            margin-left: 4px;
         }
 
         .controls input {
-            flex: 1;
-            padding: 8px 10px;
-            border-radius: 8px;
-            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
             outline: none;
+            transition: all 0.2s ease;
         }
 
-        .controls button {
-            padding: 8px 14px;
-            border-radius: 8px;
+        .controls input:focus {
+            border-color: #ff7ac8;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 2px rgba(255, 122, 200, 0.2);
+        }
+
+        .update-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 24px;
+            border-radius: 10px;
             border: none;
             cursor: pointer;
-            background: #ff7ac8;
-            color: black;
+            background: linear-gradient(135deg, #ff7ac8, #c74291);
+            color: white;
             font-weight: bold;
+            font-size: 1rem;
+            transition: transform 0.1s ease, filter 0.2s;
         }
 
+        .update-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .update-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Arena Layout */
         .arena {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding: 10px;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
 
         .screen {
-            aspect-ratio: 16 / 9;
+            position: absolute;
             background: black;
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        /* Screen 1: Top Left */
+        #screen1 {
+            top: 2vh;
+            left: 1vw;
+            width: 48.5vw;
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Screen 2: Top Right */
+        #screen2 {
+            top: 2vh;
+            right: 1vw;
+            width: 48.5vw;
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Screen 3: Bottom Center */
+        #screen3 {
+            bottom: 140px;
+            /* Space for controls */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 48.5vw;
+            aspect-ratio: 16 / 9;
+            /* If screen 3 gets too tall and hits top row, we might need max-height constraints */
+            max-height: 45vh;
+        }
+
+        /* Player Name Overlay */
+        .player-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .player-name {
+            font-size: 1.5vw;
+            /* Responsive font size */
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.5px;
         }
 
         iframe {
@@ -59,56 +163,85 @@
             height: 100%;
             border: none;
         }
-
-        @media (max-width: 768px) {
-            .arena {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 
 <body>
 
-    <div class="controls">
-        <input id="vid1" placeholder="Left screen video ID">
-        <input id="vid2" placeholder="Right screen video ID">
-        <input id="name1" placeholder="Left screen player name">
-        <input id="name2" placeholder="Right screen player name">
-        <button onclick="updateVideos()">Update</button>
-    </div>
-
     <div class="arena">
-        <div class="screen">
-            <div>
-                <span id="player1" style="font-size: 24px;font-weight: bold;">PutraSkibidi</span>
+        <!-- Screen 1 -->
+        <div id="screen1" class="screen">
+            <div class="player-label">
+                <span id="player1" class="player-name">Player 1</span>
             </div>
-            <iframe id="frame1" src="https://www.youtube.com/embed/VIDEO_ID_1" allowfullscreen></iframe>
+            <iframe id="frame1" src="" allowfullscreen></iframe>
         </div>
 
-        <div class="screen">
-            <div>
-                <span id="player2" style="font-size: 24px;font-weight: bold;">Putri SKIBIDI</span>
+        <!-- Screen 2 -->
+        <div id="screen2" class="screen">
+            <div class="player-label">
+                <span id="player2" class="player-name">Player 2</span>
             </div>
-            <iframe id="frame2" src="https://www.youtube.com/embed/VIDEO_ID_2" allowfullscreen></iframe>
+            <iframe id="frame2" src="" allowfullscreen></iframe>
+        </div>
+
+        <!-- Screen 3 -->
+        <div id="screen3" class="screen">
+            <div class="player-label">
+                <span id="player3" class="player-name">Player 3</span>
+            </div>
+            <iframe id="frame3" src="" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="controls-container">
+        <div class="controls">
+            <!-- P1 Inputs -->
+            <div class="input-group">
+                <label>Player 1 (Top Left)</label>
+                <input id="vid1" placeholder="Video ID / URL">
+                <input id="name1" placeholder="Name">
+            </div>
+
+            <!-- P2 Inputs -->
+            <div class="input-group">
+                <label>Player 2 (Top Right)</label>
+                <input id="vid2" placeholder="Video ID / URL">
+                <input id="name2" placeholder="Name">
+            </div>
+
+            <!-- P3 Inputs -->
+            <div class="input-group">
+                <label>Player 3 (Bottom)</label>
+                <input id="vid3" placeholder="Video ID / URL">
+                <input id="name3" placeholder="Name">
+            </div>
+
+            <button class="update-btn" onclick="updateVideos()">UPDATE</button>
         </div>
     </div>
 
     <script>
+        // Store current state to prevent unnecessary reloads
+        const currentState = {
+            v1: '', n1: '',
+            v2: '', n2: '',
+            v3: '', n3: ''
+        };
+
         function extractVideoID(input) {
+            if (!input) return null;
             try {
                 // Short youtu.be links
                 if (input.includes("youtu.be/")) {
                     return input.split("youtu.be/")[1].split("?")[0];
                 }
-
                 // Full youtube.com links
                 if (input.includes("youtube.com")) {
                     const url = new URL(input);
                     return url.searchParams.get("v");
                 }
-
-                // Already a video ID
+                // Already a video ID (assuming alphanumeric len ~11)
                 return input;
             } catch {
                 return null;
@@ -116,17 +249,31 @@
         }
 
         function updateVideos() {
-            const v1 = extractVideoID(document.getElementById("vid1").value.trim());
-            const v2 = extractVideoID(document.getElementById("vid2").value.trim());
-            const n1 = document.getElementById("name1").value.trim();
-            const n2 = document.getElementById("name2").value.trim();
-            document.getElementById("player1").textContent = n1;
-            document.getElementById("player2").textContent = n2;
-            if (v1) frame1.src = "https://www.youtube.com/embed/" + v1;
-            if (v2) frame2.src = "https://www.youtube.com/embed/" + v2;
+            updatePlayer(1);
+            updatePlayer(2);
+            updatePlayer(3);
         }
-    </script>
 
+        function updatePlayer(id) {
+            const vidInput = document.getElementById(`vid${id}`).value.trim();
+            const nameInput = document.getElementById(`name${id}`).value.trim();
+            const extractedVid = extractVideoID(vidInput);
+
+            // Update Name if changed and not empty
+            if (nameInput && nameInput !== currentState[`n${id}`]) {
+                document.getElementById(`player${id}`).textContent = nameInput;
+                currentState[`n${id}`] = nameInput;
+            }
+
+            // Update Video if changed and valid
+            if (extractedVid && extractedVid !== currentState[`v${id}`]) {
+                document.getElementById(`frame${id}`).src = "https://www.youtube.com/embed/" + extractedVid + "?autoplay=1&mute=1";
+                currentState[`v${id}`] = extractedVid;
+            }
+        }
+
+        // Initial setups or default values could go here
+    </script>
 
 </body>
 
